@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Word Search: Sehat & Kebersihan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔬</text></svg>">
+    <style>
+        :root {
+            --bg: #111;
+            --card: #1e1e1e;
+            --ink: #f5f5f5;
+            --muted: #9ca3af;
+            --accent: #0ea5e9;
+            --accent-2: #22c55e;
+            --grid: #2d2d2d;
+            --highlight: #1e3a8a;
+            --highlight-2: #0ea5e9;
+            --radius: 18px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #111;
+            font-family: Poppins, sans-serif;
+            color: var(--ink);
+        }
+
+        .wrap {
+            display: flex;
+            flex-direction: column;
+            width: min(1000px, 95vw);
+            height: 95vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            flex-shrink: 0;
+            margin-bottom: 20px;
+        }
+
+        .layout {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            align-content: center;
+            justify-content: center;
+            transform-origin: top center;
+        }
+
+        .title {
+            font-size: clamp(20px, 2.2vw, 28px);
+            font-weight: 700;
+            letter-spacing: .2px;
+            margin-bottom: 5px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            border: 1px solid #2d2d2d;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            border: 0;
+            background: var(--ink);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, .08);
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        .btn.secondary {
+            background: #333;
+            color: var(--ink);
+        }
+
+        .btn.accent {
+            background: var(--accent);
+        }
+
+        @media (max-width: 880px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            border-radius: 12px;
+            background: #1e1e1e;
+            border: 1px solid var(--grid);
+            font-size: clamp(18px, 3.2vw, 26px);
+            transition: background .2s ease, color .2s ease, transform .05s ease;
+        }
+
+        .cell:hover {
+            transform: translateY(-1px)
+        }
+
+        .legend {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 8px
+        }
+
+        .legend li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border: 1px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+
+        .legend .word {
+            font-weight: 600
+        }
+
+        .legend .note {
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            color: #0f172a;
+            border-radius: 999px;
+            padding: 6px 20px;
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        /* Answer highlighting */
+        .answer {
+            position: relative;
+        }
+
+        .answer::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity .2s ease;
+            background: linear-gradient(135deg, var(--highlight), var(--highlight-2));
+            mix-blend-mode: multiply;
+        }
+
+        body.show-answers .answer::after {
+            opacity: 1
+        }
+
+        /* Strikethrough found words (click on list) */
+        .legend li.found .word {
+            text-decoration: line-through;
+            opacity: .7
+        }
+
+        .hint {
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        .footer-bar {
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 16px;
+            color: var(--muted);
+            padding: 8px 0;
+            margin-top: 10px;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="header">
+            <div>
+                <div class="title">Word Search – Quantum Physics</div>
+            </div>
+            <div class="controls">
+                <button id="toggleAnswer" class="btn accent" aria-pressed="false">Show Answer Key</button>
+                <button id="resetFound" class="btn secondary">Reset Checklist</button>
+            </div>
+        </div>
+
+        <div class="layout">
+            <section class="card">
+                <div id="grid" class="grid" role="grid" aria-label="Word search board 10 by 10"></div>
+            </section>
+
+            <aside class="card">
+                <div class="badge" style="margin-bottom:10px">Word List</div>
+                <ul id="legend" class="legend" aria-label="Word List">
+                    <li data-word="QUANTUM"><span class="word">Quantum</span><span class="note">7 letters</span></li>
+                    <li data-word="QUBIT"><span class="word">Qubit</span><span class="note">5 letters</span></li>
+                    <li data-word="EIGENSTATE"><span class="word">Eigenstate</span><span class="note">10 letters</span>
+                    </li>
+                    <li data-word="TENSOR"><span class="word">Tensor</span><span class="note">6 letters</span></li>
+                    <li data-word="ORBITAL"><span class="word">Orbital</span><span class="note">7 letters</span></li>
+                    <li data-word="SPIN"><span class="word">Spin</span><span class="note">4 letters</span></li>
+                    <li data-word="SHOR"><span class="word">Shor</span><span class="note">4 letters</span></li>
+                    <li data-word="PLANCK"><span class="word">Planck</span><span class="note">6 letters</span></li>
+                    <li data-word="BOHR"><span class="word">Bohr</span><span class="note">4 letters</span></li>
+                    <li data-word="DIRAC"><span class="word">Dirac</span><span class="note">5 letters</span></li>
+                </ul>
+                <div class="hint" style="margin-top:12px">
+                    Click a word to mark it as <em>completed</em>.
+                    The "Show Answer Key" button will highlight all answer letters on the board.
+                </div>
+            </aside>
+        </div>
+
+        <footer class="footer-bar">
+            <p>
+                &copy; 2025
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 10x10 grid letters (uppercase)
+        const letters = [
+            // r0
+            ['Q', 'S', 'D', 'P', 'F', 'B', 'G', 'H', 'O', 'J'],
+            // r1
+            ['R', 'U', 'T', 'E', 'N', 'S', 'O', 'R', 'Z', 'X'],
+            // r2
+            ['T', 'L', 'A', 'G', 'K', 'J', 'B', 'H', 'F', 'C'],
+            // r3
+            ['S', 'P', 'I', 'N', 'V', 'I', 'M', 'B', 'R', 'N'],
+            // r4
+            ['H', 'Q', 'L', 'E', 'T', 'X', 'C', 'V', 'K', 'M'],
+            // r5
+            ['O', 'W', 'X', 'A', 'V', 'U', 'X', 'B', 'Q', 'N'],
+            // r6
+            ['R', 'T', 'L', 'P', 'N', 'T', 'M', 'Y', 'U', 'Z'],
+            // r7
+            ['D', 'D', 'I', 'R', 'A', 'C', 'P', 'R', 'B', 'S'],
+            // r8
+            ['V', 'C', 'X', 'Z', 'W', 'Q', 'K', 'W', 'I', 'Q'],
+            // r9
+            ['E', 'I', 'G', 'E', 'N', 'S', 'T', 'A', 'T', 'E'],
+        ];
+
+        // Answer coordinates for highlighting (array of arrays of [r,c])
+        const answers = {
+            'QUANTUM': [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]],
+            'QUBIT': [[5, 8], [6, 8], [7, 8], [8, 8], [9, 8]],
+            'EIGENSTATE': [[9, 0], [9, 1], [9, 2], [9, 3], [9, 4], [9, 5], [9, 6], [9, 7], [9, 8], [9, 9]],
+            'TENSOR': [[1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7]],
+            'ORBITAL': [[0, 8], [1, 7], [2, 6], [3, 5], [4, 4], [5, 3], [6, 2]],
+            'SPIN': [[3, 0], [3, 1], [3, 2], [3, 3]],
+            'SHOR': [[3, 0], [4, 0], [5, 0], [6, 0]],
+            'PLANCK': [[3, 1], [4, 2], [5, 3], [6, 4], [7, 5], [8, 6]],
+            'BOHR': [[0, 5], [1, 6], [2, 7], [3, 8]],
+            'DIRAC': [[7, 1], [7, 2], [7, 3], [7, 4], [7, 5]],
+        };
+
+        // Render grid
+        const gridEl = document.getElementById('grid');
+        letters.forEach((row, r) => {
+            row.forEach((ch, c) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.setAttribute('role', 'gridcell');
+                cell.setAttribute('aria-label', `row ${r + 1}, column ${c + 1}, letter ${ch}`);
+                cell.textContent = ch;
+                cell.dataset.rc = `${r},${c}`;
+                gridEl.appendChild(cell);
+            });
+        });
+
+        // Mark answer cells so CSS can highlight on toggle
+        const rcToIndex = (r, c) => r * 10 + c;
+        Object.values(answers).flat().forEach(([r, c]) => {
+            const idx = rcToIndex(r, c);
+            const cell = gridEl.children[idx];
+            if (cell) cell.classList.add('answer');
+        });
+
+        // Toggle answers
+        const toggleBtn = document.getElementById('toggleAnswer');
+        toggleBtn.addEventListener('click', () => {
+            const showing = document.body.classList.toggle('show-answers');
+            toggleBtn.textContent = showing ? 'Hide Answer Key' : 'Show Answer Key';
+            toggleBtn.setAttribute('aria-pressed', showing ? 'true' : 'false');
+        });
+
+        // Legend click to mark found
+        const legend = document.getElementById('legend');
+        legend.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            li.classList.toggle('found');
+        });
+
+        // Reset found checklist
+        document.getElementById('resetFound').addEventListener('click', () => {
+            legend.querySelectorAll('li.found').forEach(li => li.classList.remove('found'));
+        });
+    </script>
+</body>
+
+</html>

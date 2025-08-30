@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕒</text></svg>">
+    <title>Analog Clock</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            gap: 100px;
+        }
+
+        .clock {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #222, #111);
+            box-shadow: 0 0 50px rgba(255, 255, 255, .25);
+        }
+
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+            border-radius: 1px;
+        }
+
+        .hour {
+            z-index: 3;
+            width: 5px;
+            height: 70px;
+            background: #fff;
+            box-shadow: 0 0 5px rgba(255, 255, 255, .25);
+        }
+
+        .minute {
+            z-index: 2;
+            width: 5px;
+            height: 120px;
+            background: #aaa;
+            box-shadow: 0 0 5px rgba(170, 170, 170, .25);
+        }
+
+        .second {
+            z-index: 4;
+            width: 2px;
+            height: 120px;
+            background: #e53935;
+            box-shadow: 0 0 10px rgba(229, 57, 53, .5);
+        }
+
+        .center-dot {
+            z-index: 5;
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #e53935;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(229, 57, 53, .75);
+        }
+
+        .date-info {
+            text-align: left;
+            font-size: 20px;
+            line-height: 1.25;
+            padding: 30px;
+            min-width: 180px;
+        }
+
+        .date-info .day {
+            font-size: 36px;
+            font-weight: bold;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .date-info .date {
+            font-size: 24px;
+            color: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Analog Clock -->
+        <div class="clock">
+            <div class="hand hour" id="hour"></div>
+            <div class="hand minute" id="minute"></div>
+            <div class="hand second" id="second"></div>
+            <div class="center-dot"></div>
+        </div>
+
+        <!-- Date Info -->
+        <div class="date-info">
+            <div class="day" id="day">Friday</div>
+            <div class="date" id="date">29 August 2025</div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // Update clock hands
+            const second = now.getSeconds();
+            const minute = now.getMinutes();
+            const hour = now.getHours();
+
+            const secondDeg = second * 6;
+            const minuteDeg = (minute + second / 60) * 6;
+            const hourDeg = (hour % 12 + minute / 60) * 30;
+
+            document.getElementById('second').style.transform =
+                `translateX(-50%) rotate(${secondDeg}deg)`;
+            document.getElementById('minute').style.transform =
+                `translateX(-50%) rotate(${minuteDeg}deg)`;
+            document.getElementById('hour').style.transform =
+                `translateX(-50%) rotate(${hourDeg}deg)`;
+
+            // Update date info
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            document.getElementById('day').textContent = days[now.getDay()];
+            document.getElementById('date').textContent =
+                `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+
+</html>

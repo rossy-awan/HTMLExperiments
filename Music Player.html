@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Player with Visualizer</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        input {
+            margin: 10px;
+            background: #222;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input:hover {
+            background: #333;
+        }
+
+        canvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            display: block;
+        }
+
+        audio {
+            margin-top: 10px;
+            width: 80%;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎵 Music Visualizer</h1>
+    <input type="file" id="fileInput" accept=".mp3,.mp4" />
+    <canvas id="visualizer"></canvas>
+    <audio id="audioPlayer" controls></audio>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        let audioCtx, analyser, source, dataArray, bufferLength, smoothArray;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                bufferLength = analyser.fftSize;
+                dataArray = new Uint8Array(bufferLength);
+                smoothArray = new Float32Array(bufferLength).fill(0);
+            }
+        }
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const url = URL.createObjectURL(file);
+            audioPlayer.src = url;
+            audioPlayer.play();
+            initAudio();
+            connectAudio();
+        });
+
+        function connectAudio() {
+            if (source) source.disconnect();
+            source = audioCtx.createMediaElementSource(audioPlayer);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            visualize();
+        }
+
+        function visualize() {
+            const WIDTH = (canvas.width = canvas.offsetWidth);
+            const HEIGHT = (canvas.height = canvas.offsetHeight);
+            const temporalFactor = .9;
+            const spatialFactor = .8;
+
+            function draw() {
+                requestAnimationFrame(draw);
+                analyser.getByteTimeDomainData(dataArray);
+                ctx.fillRect(0, 0, WIDTH, HEIGHT);
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+
+                // Gradient stroke
+                let t = Date.now() * .001;
+                let offset = (Math.sin(t) + 1) / 2;
+                let gradient = ctx.createLinearGradient(0, 0, WIDTH, 0);
+                gradient.addColorStop(0, `rgba(255, 255, 255, 0)`);
+                gradient.addColorStop(.25 + .75 * offset, `rgba(255, 255, 255, .8)`);
+                gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                ctx.strokeStyle = gradient;
+                ctx.shadowColor = 'rgba(255, 255, 255, .6)';
+                ctx.shadowBlur = 10;
+                const sliceWidth = WIDTH / bufferLength;
+                let x = 0;
+
+                // Low-pass temporal
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    smoothArray[i] = smoothArray[i] * temporalFactor + v * (1 - temporalFactor);
+                }
+
+                // Low-pass spatial (double-pass symmetric)
+                let tempArray = new Float32Array(bufferLength);
+                tempArray[0] = smoothArray[0];
+                for (let i = 1; i < bufferLength; i++) tempArray[i] = tempArray[i - 1] * spatialFactor + smoothArray[i] * (1 - spatialFactor);
+                for (let i = bufferLength - 2; i >= 0; i--) tempArray[i] = tempArray[i + 1] * spatialFactor + tempArray[i] * (1 - spatialFactor);
+                smoothArray.set(tempArray);
+
+                // Curve
+                for (let i = 0; i < bufferLength; i++) {
+                    let y = smoothArray[i] * HEIGHT / 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+
+                ctx.stroke();
+            }
+            draw();
+        }
+    </script>
+</body>
+
+</html>

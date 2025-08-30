@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+    <title>Dice Roll</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0e0e0e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .8);
+            padding: 40px;
+            width: 350px;
+        }
+
+        .dice {
+            font-size: 150px;
+            color: #fff;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease-out;
+        }
+
+        .roll-button {
+            background-color: #4aa3df;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .roll-button:hover {
+            background-color: #3498db;
+        }
+
+        .roll-button:focus {
+            outline: none;
+        }
+
+        .info {
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="dice" id="dice">🎲</div>
+        <button class="roll-button" onclick="rollDice()">Roll Dice</button>
+        <div class="info">Click the button to roll the dice</div>
+    </div>
+
+    <script>
+        function rollDice() {
+            const diceFace = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            const diceElement = document.getElementById('dice');
+            const rollDuration = 2000;
+            const steps = 10;
+            const stepDuration = rollDuration / steps;
+            let startTime = Date.now();
+
+            function updateDice() {
+                const elapsedTime = Date.now() - startTime;
+                const progress = elapsedTime / rollDuration;
+
+                if (progress < 1) {
+                    const speedFactor = (progress - 0.5) ** 2 * 4;
+                    console.log(speedFactor);
+                    diceElement.textContent = diceFace[Math.floor(Math.random() * 6)];
+                    setTimeout(updateDice, stepDuration * speedFactor);
+                } else {
+                    diceElement.textContent = diceFace[Math.floor(Math.random() * 6)];
+                }
+            }
+
+            updateDice();
+        }
+    </script>
+</body>
+
+</html>
