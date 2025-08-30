@@ -27,8 +27,7 @@ All projects are self-contained — just open the `.html` file in your browser a
 
 ## How to Use
 
-1. Clone or download this repository:
-   ```git clone https://github.com/yourusername/HTMLExperiments.git```
+1. Clone or download this repository.
 2. Open any `.html` file in your web browser.
 3. Interact with the project and enjoy!
 
